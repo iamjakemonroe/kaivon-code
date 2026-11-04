@@ -6,6 +6,8 @@
 
 Kaivon Code is built on Code - OSS, the open-source core of VS Code, so it has the editor, terminal, debugger and Git you already know. Extensions come from [Open VSX](https://open-vsx.org).
 
+[Chip](chip) is built in: your coding partner, which reads your project, makes changes you approve, and runs your tests.
+
 It's early. Builds aren't signed yet, so your system will warn you the first time you open one.
 
 ## How this repo works
@@ -18,9 +20,10 @@ The repo holds what makes Kaivon Code different, not a copy of VS Code. Each bui
 | [`prepare_vscode.sh`](prepare_vscode.sh) | the product's name and identity |
 | [`kaivon/apply.mjs`](kaivon/apply.mjs) | the themes and default settings |
 | [`src/stable/`](src/stable) | files copied over VS Code's: icons, the Kaivon Night and Day themes |
+| [`chip/`](chip) | the Chip extension, which also works in any VS Code |
 | [`icons/make_icons.py`](icons/make_icons.py) | draws every icon from the Kaivon mark |
 
-[GitHub Actions](.github/workflows/build.yml) builds Mac, Windows and Linux on every push. A `v*` tag publishes a release.
+Pushing a `v*` tag makes [GitHub Actions](.github/workflows/build.yml) build Mac, Windows and Linux and publish them as a release.
 
 ## Credits
 

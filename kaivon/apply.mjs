@@ -1,7 +1,7 @@
 // What makes VS Code's source Kaivon Code, after VSCodium's patches. Run from vscode/. Edits by
 // meaning rather than by diff, so a new VS Code version only fails here when something really moved
 // (each edit throws if its target is gone).
-import { readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -47,3 +47,10 @@ edit('src/vs/workbench/services/themes/common/workbenchThemeService.ts', (s) => 
 
 // The glow (src/stable/.../kaivon.css).
 edit('src/vs/workbench/browser/style.ts', (s) => s.replace("import './media/style.css';", "import './media/style.css';\nimport './media/kaivon.css';"));
+
+// Chip, built in (built from ../chip first).
+mkdirSync('extensions/chip', { recursive: true });
+for (const item of ['README.md', 'dist', 'media']) cpSync(join(here, '..', 'chip', item), join('extensions/chip', item), { recursive: true });
+const { scripts: _scripts, devDependencies: _dev, ...chip } = JSON.parse(readFileSync(join(here, '..', 'chip/package.json'), 'utf8'));
+writeFileSync('extensions/chip/package.json', `${JSON.stringify(chip, null, 2)}\n`);
+cpSync(join(here, '..', 'LICENSE'), 'extensions/chip/LICENSE');
