@@ -24,7 +24,7 @@ The repo holds what makes Kaivon Code different, not a copy of VS Code. Each bui
 | [`site/`](site) | code.kaivon.app |
 | [`icons/make_icons.py`](icons/make_icons.py) | draws every icon from the Kaivon mark |
 
-Pushing a `v*` tag makes [GitHub Actions](.github/workflows/build.yml) build Mac, Windows and Linux and publish them as a release.
+Pushing a `v*` tag makes [GitHub Actions](.github/workflows/build.yml) build Mac, Windows and Linux and publish them as a release. When GitHub has no Mac free, [Retry](.github/workflows/retry.yml) asks again until it does.
 
 ## Credits
 

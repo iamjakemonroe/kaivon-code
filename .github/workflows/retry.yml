@@ -1,0 +1,40 @@
+name: Retry
+
+# GitHub sometimes has no Mac free: a job waits 15 minutes, gives up without ever starting, and the
+# release is left without that system. This asks again until a machine turns up. It only retries jobs
+# that never started: a build that really failed is left alone, for a person to read.
+
+on:
+  workflow_run:
+    workflows: [Build]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  retry:
+    # Only the first attempt: from then on this one job keeps watch.
+    if: github.event.workflow_run.conclusion != 'success' && github.event.workflow_run.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    permissions:
+      actions: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GH_REPO: ${{ github.repository }}
+      RUN: ${{ github.event.workflow_run.id }}
+    steps:
+      - name: Ask again until every system has had a machine
+        run: |
+          for try in 1 2 3 4 5 6 7 8 9 10 11 12; do
+            jobs="$( gh api "repos/${GH_REPO}/actions/runs/${RUN}/jobs?per_page=50" --jq '.jobs' )"
+            failed="$( jq '[.[] | select(.conclusion == "failure")] | length' <<< "${jobs}" )"
+            never="$( jq '[.[] | select(.conclusion == "cancelled" and (.steps | length) == 0)] | length' <<< "${jobs}" )"
+            echo "Try ${try}: ${never} never started, ${failed} really failed"
+            if [[ "${failed}" != "0" || "${never}" == "0" ]]; then exit 0; fi
+            sleep 300
+            gh run rerun "${RUN}" --failed
+            sleep 60
+            gh run watch "${RUN}" --interval 60 > /dev/null || true
+          done
+          echo "::error::No Mac was free after 12 tries. Push the tag again later."
