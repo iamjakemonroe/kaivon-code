@@ -27,6 +27,7 @@ pkg.contributes.configurationDefaults = {
   'editor.cursorSmoothCaretAnimation': 'on',
   'editor.cursorBlinking': 'smooth',
   'editor.guides.bracketPairs': 'active',
+  'editor.guides.bracketPairsHorizontal': false,
   'workbench.list.smoothScrolling': true,
   'terminal.integrated.smoothScrolling': true,
 };

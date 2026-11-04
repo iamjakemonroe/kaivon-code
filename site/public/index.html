@@ -47,25 +47,35 @@
       </div>
       <p class="small-print" id="primary-note"></p>
 
-      <figure class="demo" role="img" aria-label="Kaivon Code with Chip finding a bug in cart.js, showing the fix for approval, and running the tests, which pass.">
+      <figure class="demo" id="demo" role="img" aria-label="Kaivon Code with Chip finding a bug in cart.js, showing the fix for approval, and running the tests, which pass.">
         <div class="window" id="window">
-          <div class="bar"><i></i><i></i><i></i><span>cart.js · shop</span></div>
+          <div class="bar"><i></i><i></i><i></i><span id="title">cart.js · shop</span><button class="bar-btn" id="over" hidden>Start over</button></div>
           <div class="panes">
             <div class="rail"><b class="on"></b><b></b><b></b><b></b></div>
-            <div class="tree">
+            <div class="kc-tree" id="tree">
               <p>SHOP</p>
               <span class="on">cart.js</span>
               <span>cart.test.js</span>
               <span>package.json</span>
             </div>
-            <div class="editor">
-              <div class="tabs"><span class="tab on">cart.js</span><span class="tab">cart.test.js</span></div>
-              <pre class="code"><span class="ln">1</span><span class="k">export function</span> <span class="f">total</span>(items, coupon) {
-<span class="ln">2</span>  <span class="k">const</span> subtotal = items.<span class="f">reduce</span>((sum, item) =&gt; sum + item.price, <span class="n">0</span>);
-<span class="ln">3</span>  <span class="c">// A coupon takes a percentage off.</span>
-<span class="ln">4</span><span id="line4">  <span class="k">return</span> subtotal - coupon;</span>
-<span class="ln">5</span>}</pre>
-              <div class="term" id="term"><p class="tt">TERMINAL</p><pre id="term-out"></pre></div>
+            <div class="kc-editor">
+              <div class="kc-tabs" id="tabs"><span class="kc-tab on">cart.js</span><span class="kc-tab">cart.test.js</span></div>
+              <div class="code-area">
+                <pre class="code" id="still"><span class="ln">1</span><span class="c">/** @typedef {{ name: string, price: number }} Item */</span>
+<span class="ln">2</span>
+<span class="ln">3</span><span class="c">/** @param {Item[]} items @param {number} coupon A percentage. */</span>
+<span class="ln">4</span><span class="k">export function</span> <span class="f">total</span>(items, coupon) {
+<span class="ln">5</span>  <span class="k">const</span> subtotal = items.<span class="f">reduce</span>((sum, item) =&gt; sum + item.price, <span class="n">0</span>);
+<span class="ln">6</span>  <span class="c">// A coupon takes a percentage off.</span>
+<span class="ln">7</span><span id="line7">  <span class="k">return</span> subtotal - coupon;</span>
+<span class="ln">8</span>}</pre>
+                <div class="live" id="live" hidden></div>
+                <button class="try-it" id="try-it" hidden>Click to try the real editor</button>
+              </div>
+              <div class="term" id="term">
+                <div class="term-head"><p class="tt">TERMINAL</p><button class="bar-btn run" id="run" hidden>Run tests</button></div>
+                <pre id="term-out"></pre>
+              </div>
             </div>
             <div class="chip">
               <div class="chip-head"><span class="orb"><i></i><i></i></span><strong>Chip</strong></div>
@@ -73,6 +83,8 @@
             </div>
           </div>
         </div>
+        <figcaption class="tips" id="tips" hidden><kbd>F1</kbd> all commands <span>·</span> <kbd>⌘ D</kbd> or <kbd>Ctrl D</kbd> more cursors <span>·</span> <kbd>⌘ Enter</kbd> or <kbd>Ctrl Enter</kbd> run the tests <span>·</span> Nothing leaves your browser</figcaption>
+        <figcaption class="tips" id="touch-note" hidden>On a computer, you can try the real editor right here.</figcaption>
       </figure>
     </section>
 
@@ -120,7 +132,7 @@
         <h2>Everything you already rely on.</h2>
         <p>Kaivon Code is built on Code - OSS, the open-source core of VS Code. It already feels like home.</p>
       </div>
-      <ul class="list reveal">
+      <ul class="kc-list reveal">
         <li><b>Your extensions.</b> Thousands of them, from the Open VSX registry.</li>
         <li><b>Your tools.</b> The terminal, debugger, Git and search you know, with the same shortcuts.</li>
         <li><b>Your languages.</b> Anything VS Code supports.</li>

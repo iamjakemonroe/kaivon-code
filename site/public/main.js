@@ -55,15 +55,19 @@ const seen = new IntersectionObserver(
 );
 for (const el of document.querySelectorAll('.reveal')) seen.observe(el);
 
-// ── The demo: the fix Chip really made in testing ──────────────────────
+// ── The demo ───────────────────────────────────────────────────────────
+// Everyone first sees Chip replay a real fix. On a computer, one click turns the same window into
+// the real editor (src/playground.ts), which loads quietly in the background unless the connection
+// is slow. Monaco is built for a keyboard, so phones and tablets keep the replay.
 
 const log = document.getElementById('log');
-const line = document.getElementById('line4');
+const line = document.getElementById('line7');
 const term = document.getElementById('term-out');
 const OLD = '  <span class="k">return</span> subtotal - coupon;';
 const NEW = '  <span class="k">return</span> subtotal - (subtotal * coupon) / <span class="n">100</span>;';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 const quiet = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let replaying = true;
 
 function add(className, html) {
   const el = document.createElement('div');
@@ -75,54 +79,99 @@ function add(className, html) {
 }
 
 const ASK = `<b>cart.js <span>+1 −1</span></b><pre><span class="del">-  return subtotal - coupon;</span>
-<span class="add">+  return subtotal - (subtotal * coupon) / 100;</span></pre><div class="btns"><span class="apply">Apply</span><span class="skip2">Skip</span><span class="skip2">View diff</span></div>`;
+<span class="add">+  return subtotal - (subtotal * coupon) / 100;</span></pre><div class="btns"><span class="apply">Apply</span><span class="skip2">Skip</span></div>`;
+
+const PASSED = '$ npm test\n<span class="pass">✔ a 10% coupon on 200 leaves 180</span>\ntests 1 · pass 1 · fail 0';
 
 function finished() {
   log.replaceChildren();
   add('you', 'The test fails. The coupon should be a percentage. Fix it and run the tests.');
   add('did', 'Read cart.js and cart.test.js');
-  add('say', 'The coupon is passed as a percentage, but <code>cart.js:4</code> subtracts it as a flat amount.');
+  add('say', 'The coupon is a percentage, but <code>cart.js:7</code> subtracts it as a flat amount.');
   add('did', 'Edited cart.js +1 −1');
   add('did', 'npm test');
   add('say', 'Fixed. <code>npm test</code> passes.');
   line.innerHTML = NEW;
   line.classList.add('new');
-  term.innerHTML = '$ npm test\n<span class="pass">✔ a 10% coupon on 200 leaves 180</span>\ntests 1 · pass 1 · fail 0';
+  term.innerHTML = PASSED;
 }
 
 async function play() {
-  for (;;) {
+  const steps = [
+    [900, () => add('you', 'The test fails. The coupon should be a percentage. Fix it and run the tests.')],
+    [1100, () => add('did', 'Read cart.js')],
+    [450, () => add('did', 'Read cart.test.js')],
+    [800, () => add('say', 'The coupon is a percentage, but <code>cart.js:7</code> subtracts it as a flat amount.')],
+    [1100, () => (card = add('ask', ASK))],
+    [1700, () => card.querySelector('.apply').classList.add('press')],
+    [260, () => {
+      card.classList.add('done');
+      card.querySelector('.btns').innerHTML = '<span class="skip2">Approved</span>';
+      line.innerHTML = NEW;
+      line.classList.add('new');
+    }],
+    [900, () => {
+      term.textContent = '$ npm test';
+      add('did', 'npm test');
+    }],
+    [1000, () => (term.innerHTML = PASSED)],
+    [500, () => add('say', 'Fixed. <code>npm test</code> passes.')],
+    [5200, () => {}],
+  ];
+  let card;
+  while (replaying) {
     log.replaceChildren();
     line.innerHTML = OLD;
     line.classList.remove('new');
     term.innerHTML = '$ npm test\n<span class="fail">✖ a 10% coupon on 200 leaves 180</span>\n  190 !== 180';
-    await wait(900);
-    add('you', 'The test fails. The coupon should be a percentage. Fix it and run the tests.');
-    await wait(1100);
-    add('did', 'Read cart.js');
-    await wait(450);
-    add('did', 'Read cart.test.js');
-    await wait(800);
-    add('say', 'The coupon is passed as a percentage, but <code>cart.js:4</code> subtracts it as a flat amount.');
-    await wait(1100);
-    const card = add('ask', ASK);
-    await wait(1700);
-    card.querySelector('.apply').classList.add('press');
-    await wait(260);
-    card.classList.add('done');
-    card.querySelector('.btns').innerHTML = '<span class="skip2">Approved</span>';
-    line.innerHTML = NEW;
-    line.classList.add('new');
-    await wait(900);
-    term.textContent = '$ npm test';
-    add('did', 'npm test');
-    await wait(1000);
-    term.innerHTML = '$ npm test\n<span class="pass">✔ a 10% coupon on 200 leaves 180</span>\ntests 1 · pass 1 · fail 0';
-    await wait(500);
-    add('say', 'Fixed. <code>npm test</code> passes.');
-    await wait(5200);
+    for (const [ms, step] of steps) {
+      await wait(ms);
+      if (!replaying) return;
+      step();
+    }
   }
 }
 
 if (quiet) finished();
 else play();
+
+// The real editor.
+const offer = document.getElementById('try-it');
+const connection = navigator.connection;
+const slow = !!connection && (connection.saveData || /(^|-)[23]g$/.test(connection.effectiveType ?? ''));
+const desktop = matchMedia('(hover: hover) and (pointer: fine)').matches && innerWidth >= 960;
+let loading = null;
+
+function load() {
+  if (!loading) {
+    const css = document.createElement('link');
+    css.rel = 'stylesheet';
+    css.href = '/editor/playground.css';
+    document.head.append(css);
+    loading = import('/editor/playground.js');
+  }
+  return loading;
+}
+
+if (desktop) {
+  offer.hidden = false;
+  const go = async () => {
+    offer.textContent = 'Getting the editor ready…';
+    offer.disabled = true;
+    try {
+      const { start } = await load();
+      replaying = false;
+      offer.remove();
+      document.getElementById('window').classList.add('real');
+      start();
+    } catch {
+      offer.textContent = 'Couldn’t load the editor. Try again';
+      offer.disabled = false;
+      loading = null;
+    }
+  };
+  offer.addEventListener('click', go);
+  if (!slow) addEventListener('load', () => (window.requestIdleCallback ?? setTimeout)(() => load().catch(() => (loading = null))));
+} else {
+  document.getElementById('touch-note').hidden = false;
+}

@@ -126,7 +126,19 @@
 		"menu.background": "#FFFFFF",
 		"menu.selectionBackground": "#EEECFF",
 		"menu.selectionForeground": "#191A2E",
-		"menu.border": "#E6E6F0"
+		"menu.border": "#E6E6F0",
+		"editorBracketPairGuide.activeBackground1": "#6457F055",
+		"editorBracketPairGuide.background1": "#00000000",
+		"editorBracketPairGuide.activeBackground2": "#1C74B855",
+		"editorBracketPairGuide.background2": "#00000000",
+		"editorBracketPairGuide.activeBackground3": "#C25A1755",
+		"editorBracketPairGuide.background3": "#00000000",
+		"editorBracketPairGuide.activeBackground4": "#17845F55",
+		"editorBracketPairGuide.background4": "#00000000",
+		"editorBracketPairGuide.activeBackground5": "#C23A6355",
+		"editorBracketPairGuide.background5": "#00000000",
+		"editorBracketPairGuide.activeBackground6": "#9A6C0E55",
+		"editorBracketPairGuide.background6": "#00000000"
 	},
 	"semanticTokenColors": {
 		"parameter": "#191A2E",

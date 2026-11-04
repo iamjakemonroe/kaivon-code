@@ -1,5 +1,5 @@
 // Cloudflare Workers: serves public/ as static files at code.kaivon.app.
-// Deploy: cd site && npx wrangler deploy
+// Deploy: cd site && npm ci && npm run deploy (which builds public/editor first)
 {
   "name": "kaivon-code-site",
   "compatibility_date": "2026-10-01",

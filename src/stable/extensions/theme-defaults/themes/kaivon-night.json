@@ -280,7 +280,19 @@
 		"charts.green": "#7FE0B4",
 		"charts.purple": "#A99FFF",
 		"charts.foreground": "#B4B6D4",
-		"charts.lines": "#23254A"
+		"charts.lines": "#23254A",
+		"editorBracketPairGuide.activeBackground1": "#A99FFF55",
+		"editorBracketPairGuide.background1": "#00000000",
+		"editorBracketPairGuide.activeBackground2": "#7EE8FA55",
+		"editorBracketPairGuide.background2": "#00000000",
+		"editorBracketPairGuide.activeBackground3": "#FFB46B55",
+		"editorBracketPairGuide.background3": "#00000000",
+		"editorBracketPairGuide.activeBackground4": "#7FE0B455",
+		"editorBracketPairGuide.background4": "#00000000",
+		"editorBracketPairGuide.activeBackground5": "#FF8FB055",
+		"editorBracketPairGuide.background5": "#00000000",
+		"editorBracketPairGuide.activeBackground6": "#FFD37A55",
+		"editorBracketPairGuide.background6": "#00000000"
 	},
 	"semanticTokenColors": {
 		"parameter": "#E4E5F4",
