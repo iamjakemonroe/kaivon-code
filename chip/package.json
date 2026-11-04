@@ -5,53 +5,152 @@
   "version": "0.1.0",
   "publisher": "kaivon",
   "license": "MIT",
-  "repository": { "type": "git", "url": "https://github.com/iamjakemonroe/kaivon-code", "directory": "chip" },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/iamjakemonroe/kaivon-code",
+    "directory": "chip"
+  },
   "homepage": "https://code.kaivon.app",
   "icon": "media/icon.png",
-  "engines": { "vscode": "^1.95.0" },
-  "categories": ["AI", "Chat", "Other"],
-  "keywords": ["ai", "agent", "chip", "kaivon", "claude"],
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "agent",
+    "chip",
+    "kaivon",
+    "claude"
+  ],
   "main": "./dist/extension.js",
-  "activationEvents": ["onStartupFinished"],
-  "capabilities": { "virtualWorkspaces": false, "untrustedWorkspaces": { "supported": false, "description": "Chip edits files and runs commands, so it needs a folder you trust." } },
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": false,
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Chip edits files and runs commands, so it needs a folder you trust."
+    }
+  },
   "contributes": {
-    "viewsContainers": { "activitybar": [{ "id": "chip", "title": "Chip", "icon": "media/chip.svg" }] },
-    "views": { "chip": [{ "type": "webview", "id": "chip.chat", "name": "Chip" }] },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "chip",
+          "title": "Chip",
+          "icon": "media/chip.svg"
+        }
+      ]
+    },
+    "views": {
+      "chip": [
+        {
+          "type": "webview",
+          "id": "chip.chat",
+          "name": "Chip"
+        }
+      ]
+    },
     "commands": [
-      { "command": "chip.open", "title": "Open Chip", "category": "Chip" },
-      { "command": "chip.newChat", "title": "New Chat", "category": "Chip", "icon": "$(add)" },
-      { "command": "chip.inlineEdit", "title": "Edit with Chip", "category": "Chip" },
-      { "command": "chip.explain", "title": "Explain This", "category": "Chip" },
-      { "command": "chip.askTerminal", "title": "Ask Chip About This Output", "category": "Chip" },
-      { "command": "chip.signOut", "title": "Sign Out", "category": "Chip" }
+      {
+        "command": "chip.open",
+        "title": "Open Chip",
+        "category": "Chip"
+      },
+      {
+        "command": "chip.newChat",
+        "title": "New Chat",
+        "category": "Chip",
+        "icon": "$(add)"
+      },
+      {
+        "command": "chip.inlineEdit",
+        "title": "Edit with Chip",
+        "category": "Chip"
+      },
+      {
+        "command": "chip.explain",
+        "title": "Explain This",
+        "category": "Chip"
+      },
+      {
+        "command": "chip.askTerminal",
+        "title": "Ask Chip About This Output",
+        "category": "Chip"
+      },
+      {
+        "command": "chip.signOut",
+        "title": "Sign Out",
+        "category": "Chip"
+      }
     ],
     "keybindings": [
-      { "command": "chip.open", "key": "ctrl+l", "mac": "cmd+l" },
-      { "command": "chip.inlineEdit", "key": "ctrl+i", "mac": "cmd+i", "when": "editorTextFocus && !editorReadonly" }
+      {
+        "command": "chip.open",
+        "key": "ctrl+l",
+        "mac": "cmd+l"
+      },
+      {
+        "command": "chip.inlineEdit",
+        "key": "ctrl+i",
+        "mac": "cmd+i",
+        "when": "editorTextFocus && !editorReadonly"
+      }
     ],
     "menus": {
-      "view/title": [{ "command": "chip.newChat", "when": "view == chip.chat", "group": "navigation" }],
-      "editor/context": [
-        { "command": "chip.inlineEdit", "when": "editorTextFocus && !editorReadonly", "group": "1_chip@1" },
-        { "command": "chip.explain", "when": "editorHasSelection", "group": "1_chip@2" }
+      "view/title": [
+        {
+          "command": "chip.newChat",
+          "when": "view == chip.chat",
+          "group": "navigation"
+        }
       ],
-      "terminal/context": [{ "command": "chip.askTerminal", "group": "1_chip" }]
+      "editor/context": [
+        {
+          "command": "chip.inlineEdit",
+          "when": "editorTextFocus && !editorReadonly",
+          "group": "1_chip@1"
+        },
+        {
+          "command": "chip.explain",
+          "when": "editorHasSelection",
+          "group": "1_chip@2"
+        }
+      ],
+      "terminal/context": [
+        {
+          "command": "chip.askTerminal",
+          "group": "1_chip"
+        }
+      ]
     },
     "configuration": {
       "title": "Chip",
       "properties": {
-        "chip.server": { "type": "string", "default": "", "description": "Chip's server, for development. Leave empty to use Kaivon's." }
+        "chip.server": {
+          "type": "string",
+          "default": "",
+          "description": "Chip's server, for development. Leave empty to use Kaivon's."
+        }
       }
     }
   },
   "scripts": {
     "build": "node esbuild.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:host": "npm run build && node test/host/run.mjs"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "@types/vscode": "1.95.0",
+    "@vscode/test-electron": "^3.1.0",
     "dompurify": "^3.4.17",
     "esbuild": "^0.25.0",
     "highlight.js": "^11.12.0",

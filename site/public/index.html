@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kaivon Code: the code editor with Chip built in</title>
+  <meta name="description" content="A fast, beautiful code editor built on the open-source core of VS Code. Chip reads your project, makes changes you approve, and runs your tests. Free for Mac, Windows and Linux.">
+  <link rel="canonical" href="https://code.kaivon.app/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <meta name="theme-color" content="#0a0b17">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://code.kaivon.app/">
+  <meta property="og:title" content="Kaivon Code">
+  <meta property="og:description" content="The code editor with Chip built in. Chip reads your project, makes changes you approve, and runs your tests.">
+  <meta property="og:image" content="https://code.kaivon.app/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/main.js" defer></script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"Kaivon Code","applicationCategory":"DeveloperApplication","operatingSystem":"macOS, Windows, Linux","url":"https://code.kaivon.app/","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"publisher":{"@type":"Organization","name":"Kaivon","url":"https://kaivon.app"}}</script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the page</a>
+  <header class="nav">
+    <a class="brand" href="/" aria-label="Kaivon Code home">
+      <svg viewBox="-4 -4 88 108" width="18" height="24" aria-hidden="true"><defs><linearGradient id="kn" gradientUnits="userSpaceOnUse" x1="24" y1="0" x2="80" y2="100"><stop offset="0" stop-color="#7ee8fa"/><stop offset=".5" stop-color="#a78bfa"/><stop offset="1" stop-color="#f6b46b"/></linearGradient></defs><path fill="#f1f3f8" d="M0 0h14v100H0z"/><path fill="url(#kn)" d="M24 50 62 0h18L42 50l38 50H62z"/></svg>
+      <span>Kaivon Code</span>
+    </a>
+    <nav aria-label="Page">
+      <a href="#chip">Chip</a>
+      <a href="#editor">Editor</a>
+      <a href="#questions">Questions</a>
+      <a href="https://github.com/iamjakemonroe/kaivon-code">GitHub</a>
+    </nav>
+    <a class="btn small" href="#download">Download</a>
+  </header>
+
+  <main id="main">
+    <section class="hero">
+      <p class="tag"><span class="dot"></span> Beta · Free for Mac, Windows and Linux</p>
+      <h1>The editor you know,<br>with Chip beside you.</h1>
+      <p class="lede">Kaivon Code is a fast, beautiful editor built on the open-source core of VS Code. Chip reads your project, makes changes you approve, and runs your tests.</p>
+      <div class="cta">
+        <a class="btn" id="primary" href="#download">Download</a>
+        <a class="btn ghost" href="#chip">See how Chip works</a>
+      </div>
+      <p class="small-print" id="primary-note"></p>
+
+      <figure class="demo" role="img" aria-label="Kaivon Code with Chip finding a bug in cart.js, showing the fix for approval, and running the tests, which pass.">
+        <div class="window" id="window">
+          <div class="bar"><i></i><i></i><i></i><span>cart.js · shop</span></div>
+          <div class="panes">
+            <div class="rail"><b class="on"></b><b></b><b></b><b></b></div>
+            <div class="tree">
+              <p>SHOP</p>
+              <span class="on">cart.js</span>
+              <span>cart.test.js</span>
+              <span>package.json</span>
+            </div>
+            <div class="editor">
+              <div class="tabs"><span class="tab on">cart.js</span><span class="tab">cart.test.js</span></div>
+              <pre class="code"><span class="ln">1</span><span class="k">export function</span> <span class="f">total</span>(items, coupon) {
+<span class="ln">2</span>  <span class="k">const</span> subtotal = items.<span class="f">reduce</span>((sum, item) =&gt; sum + item.price, <span class="n">0</span>);
+<span class="ln">3</span>  <span class="c">// A coupon takes a percentage off.</span>
+<span class="ln">4</span><span id="line4">  <span class="k">return</span> subtotal - coupon;</span>
+<span class="ln">5</span>}</pre>
+              <div class="term" id="term"><p class="tt">TERMINAL</p><pre id="term-out"></pre></div>
+            </div>
+            <div class="chip">
+              <div class="chip-head"><span class="orb"><i></i><i></i></span><strong>Chip</strong></div>
+              <div class="chip-log" id="log"></div>
+            </div>
+          </div>
+        </div>
+      </figure>
+    </section>
+
+    <section class="band" id="chip">
+      <div class="head reveal">
+        <h2>Chip does the work. You make the calls.</h2>
+        <p>Give Chip a job in plain words: fix this bug, add this feature, write these tests. It finds its way around your project and gets it done, and nothing changes without you.</p>
+      </div>
+      <div class="cards">
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h10M4 12h7M4 17h10M16 9l4 3-4 3"/></svg>
+          <h3>See every change first</h3>
+          <p>Chip shows each edit as a diff before it’s saved. Apply it, skip it, or open it side by side.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6l5 5-5 5M12 18h8"/></svg>
+          <h3>Commands wait for you</h3>
+          <p>Tests, builds, installs: Chip asks before each one, then reads the output and fixes what failed.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+          <h3>Your secrets stay yours</h3>
+          <p>Chip can’t reach outside your project, and it asks before reading files like <code>.env</code>.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19l1-4L16 5l3 3L9 18z"/><path d="M14 7l3 3"/></svg>
+          <h3>Edit right where you are</h3>
+          <p>Select some code, press <kbd>⌘ I</kbd> or <kbd>Ctrl I</kbd>, and say what should change. Keep it or undo it.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 8v5M12 16v.5"/></svg>
+          <h3>Fix errors in one click</h3>
+          <p>Choose <b>Fix with Chip</b> on any error, or ask about what’s in your terminal.</p>
+        </article>
+        <article class="card reveal">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 3L5 13h6l-1 8 8-10h-6z"/></svg>
+          <h3>Fast, and thorough</h3>
+          <p>Everyone gets Chip Fast for everyday work. Chip’s best model, for the hard problems, comes with Pro (coming soon).</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="band" id="editor">
+      <div class="head reveal">
+        <h2>Everything you already rely on.</h2>
+        <p>Kaivon Code is built on Code - OSS, the open-source core of VS Code. It already feels like home.</p>
+      </div>
+      <ul class="list reveal">
+        <li><b>Your extensions.</b> Thousands of them, from the Open VSX registry.</li>
+        <li><b>Your tools.</b> The terminal, debugger, Git and search you know, with the same shortcuts.</li>
+        <li><b>Your languages.</b> Anything VS Code supports.</li>
+        <li><b>Made to feel good.</b> Kaivon Night and Day themes, with smooth scrolling and a smooth cursor from the start.</li>
+        <li><b>No tracking in the editor.</b> Microsoft’s telemetry is removed, and we don’t add any.</li>
+        <li><b>Open.</b> The editor’s code is public on GitHub, under the MIT licence.</li>
+      </ul>
+    </section>
+
+    <section class="band download" id="download">
+      <div class="head reveal">
+        <h2>Download Kaivon Code</h2>
+        <p id="version">Free, for Mac, Windows and Linux.</p>
+      </div>
+      <div class="systems reveal" id="systems">
+        <a class="system" data-file="KaivonCode-mac-apple-silicon.dmg" data-os="mac"><b>Mac</b><span>Apple Silicon (M1 and later)</span></a>
+        <a class="system" data-file="KaivonCode-mac-intel.dmg" data-os="mac-intel"><b>Mac</b><span>Intel</span></a>
+        <a class="system" data-file="KaivonCode-windows-setup.exe" data-os="windows"><b>Windows</b><span>64-bit installer</span></a>
+        <a class="system" data-file="KaivonCode-linux.tar.gz" data-os="linux"><b>Linux</b><span>64-bit .tar.gz</span></a>
+      </div>
+      <p class="small-print reveal">Kaivon Code is in beta and isn’t signed yet, so your system will warn you the first time you open it. <a href="#first-open">Here’s what to do.</a></p>
+    </section>
+
+    <section class="band" id="questions">
+      <div class="head reveal"><h2>Questions</h2></div>
+      <div class="faq reveal">
+        <details><summary>What does it cost?</summary><p>The editor is free. Chip comes with a daily allowance on your free Kaivon account, the same account you use for Utopia and Chip Study, and it refills every day. It’s shared with Chip Study.</p></details>
+        <details id="first-open"><summary>Why does my computer warn me when I open it?</summary>
+          <p>Kaivon Code isn’t signed yet, which is common for a beta. It’s built in the open, so you can read exactly how on <a href="https://github.com/iamjakemonroe/kaivon-code">GitHub</a>.</p>
+          <p><b>Mac:</b> open the download, drag Kaivon Code to Applications and open it. When macOS stops you, go to System Settings, then Privacy &amp; Security, and choose <b>Open Anyway</b>. You only do this once.</p>
+          <p><b>Windows:</b> when “Windows protected your PC” appears, choose <b>More info</b>, then <b>Run anyway</b>.</p>
+        </details>
+        <details><summary>Will my VS Code extensions work?</summary><p>Most will. Extensions come from Open VSX, the open registry, because Microsoft’s marketplace is only for Microsoft’s products. A few Microsoft-only extensions, such as Pylance and Live Share, aren’t available. Open alternatives exist for most of them.</p></details>
+        <details><summary>What does Chip see?</summary><p>Only what it reads to do your job, and you can watch every file it opens. That goes to Kaivon’s server and on to Anthropic’s Claude to answer you. Chip can’t reach outside your project, and it asks before reading files that may hold secrets.</p></details>
+        <details><summary>Can Chip change my code without asking?</summary><p>No. Each edit waits for your approval, and so does each command. If you’d like to move faster you can choose <b>Apply all in this chat</b> for edits. Commands always ask.</p></details>
+        <details><summary>Who makes this?</summary><p><a href="https://kaivon.app">Kaivon</a>, the studio behind Utopia, Wavee and Chip Study. Kaivon Code is built on Code - OSS by Microsoft and the build work of the VSCodium project, and isn’t affiliated with either.</p></details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <span>© <span id="year">2026</span> Kaivon</span>
+    <nav aria-label="Footer">
+      <a href="https://kaivon.app">Kaivon</a>
+      <a href="https://github.com/iamjakemonroe/kaivon-code">GitHub</a>
+      <a href="https://kaivon.app/terms">Terms</a>
+      <a href="https://kaivon.app/privacy">Privacy</a>
+      <a href="mailto:support@kaivon.app">support@kaivon.app</a>
+    </nav>
+  </footer>
+</body>
+</html>

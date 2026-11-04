@@ -44,7 +44,7 @@ export class ChipView implements vscode.WebviewViewProvider, AgentView {
     private readonly api: ChipApi,
     private readonly documents: ChangeDocuments,
   ) {
-    this.model = context.globalState.get<Model>('chip.model') ?? 'best';
+    this.model = context.globalState.get<Model>('chip.model') ?? 'fast';
     this.host = new VsCodeHost((r) => this.approve(r));
     this.agent = this.newAgent();
   }

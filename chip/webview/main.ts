@@ -26,7 +26,7 @@ const log = el('main', 'log');
 const foot = el('footer', 'foot');
 app.append(head, log, foot);
 
-let state: PanelState = { signedIn: false, email: null, model: 'best', tier: null, left: null };
+let state: PanelState = { signedIn: false, email: null, model: 'fast', tier: null, left: null };
 let busy = false;
 let turn: HTMLElement | null = null;
 let textBlock: { node: HTMLElement; text: string } | null = null;
@@ -57,7 +57,7 @@ function renderHead() {
     const b = el('button', state.model === id ? 'on' : '', label);
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', String(state.model === id));
-    b.title = id === 'best' ? 'Chip’s best model, for hard problems' : 'Quick and light, for everyday work';
+    b.title = id === 'best' ? 'Chip’s best model, for hard problems. Comes with Pro.' : 'Quick and light, for everyday work';
     b.onclick = () => send({ type: 'model', model: id });
     models.append(b);
   }

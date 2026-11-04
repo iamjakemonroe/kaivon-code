@@ -21,6 +21,7 @@ The repo holds what makes Kaivon Code different, not a copy of VS Code. Each bui
 | [`kaivon/apply.mjs`](kaivon/apply.mjs) | the themes and default settings |
 | [`src/stable/`](src/stable) | files copied over VS Code's: icons, the Kaivon Night and Day themes |
 | [`chip/`](chip) | the Chip extension, which also works in any VS Code |
+| [`site/`](site) | code.kaivon.app |
 | [`icons/make_icons.py`](icons/make_icons.py) | draws every icon from the Kaivon mark |
 
 Pushing a `v*` tag makes [GitHub Actions](.github/workflows/build.yml) build Mac, Windows and Linux and publish them as a release.

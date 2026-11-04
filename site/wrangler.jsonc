@@ -1,0 +1,14 @@
+// Cloudflare Workers: serves public/ as static files at code.kaivon.app.
+// Deploy: cd site && npx wrangler deploy
+{
+  "name": "kaivon-code-site",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./public",
+    "html_handling": "drop-trailing-slash",
+    "not_found_handling": "404-page"
+  },
+  "routes": [{ "pattern": "code.kaivon.app", "custom_domain": true }],
+  "workers_dev": true,
+  "preview_urls": false
+}
