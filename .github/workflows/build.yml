@@ -1,0 +1,146 @@
+name: Build
+
+# Builds Kaivon Code for every system on GitHub's machines. Pushing a v* tag also publishes a release
+# with fixed file names, which the download buttons on code.kaivon.app point to.
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+    paths-ignore: ['**/*.md', 'chip/**']
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+env:
+  APP_NAME: KaivonCode
+  DISPLAY_NAME: Kaivon Code
+  BINARY_NAME: kaivon-code
+  ASSETS_REPOSITORY: ${{ github.repository }}
+  GH_REPO_PATH: ${{ github.repository }}
+  ORG_NAME: Kaivon
+  VSCODE_QUALITY: stable
+  # Compile and package in one job on each system.
+  CI_BUILD: 'no'
+  SHOULD_BUILD: 'yes'
+  # Not needed yet: remote servers and the tunnel CLI.
+  SHOULD_BUILD_REH: 'no'
+  SHOULD_BUILD_REH_WEB: 'no'
+  SHOULD_BUILD_CLI: 'no'
+  SHOULD_BUILD_DEB: 'no'
+  SHOULD_BUILD_RPM: 'no'
+  SHOULD_BUILD_EXE_SYS: 'no'
+  SHOULD_BUILD_MSI: 'no'
+  SHOULD_BUILD_MSI_NOUP: 'no'
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 300
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Mac (Apple Silicon), runner: macos-14, os: osx, arch: arm64, heap: 12288 }
+          - { name: Mac (Intel), runner: macos-15-intel, os: osx, arch: x64, heap: 12288 }
+          - { name: Windows, runner: windows-2022, os: windows, arch: x64, heap: 8192 }
+          - { name: Linux, runner: ubuntu-22.04, os: linux, arch: x64, heap: 8192 }
+    env:
+      OS_NAME: ${{ matrix.os }}
+      VSCODE_ARCH: ${{ matrix.arch }}
+      MAX_OLD_SPACE_SIZE: ${{ matrix.heap }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.11'
+
+      - name: Version
+        # VS Code's version, then this build's number: 1.143.1 and build 12 is 1.143.11012.
+        run: echo "RELEASE_VERSION=$( jq -r .tag upstream/stable.json )$(( 1000 + GITHUB_RUN_NUMBER ))" >> "${GITHUB_ENV}"
+
+      - name: Linux packages
+        if: matrix.os == 'linux'
+        run: sudo apt-get update -y && sudo apt-get install -y build-essential g++ libx11-dev libxkbfile-dev libsecret-1-dev libkrb5-dev
+
+      - name: Get VS Code's source
+        run: |
+          set -o pipefail
+          . get_repo.sh 2>&1 | tee build.log
+
+      - name: Build
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -o pipefail
+          ./build.sh 2>&1 | tee -a build.log
+
+      - name: Package
+        run: |
+          set -o pipefail
+          ./prepare_assets.sh 2>&1 | tee -a build.log
+
+      # Job logs need a sign-in to read; annotations are public, so failures can be read from anywhere.
+      - name: Say what failed
+        if: failure()
+        run: |
+          clean() { sed -e 's/\x1b\[[0-9;]*[A-Za-z]//g' | cut -c1-200 | sed -e 's/%/%25/g' | awk 'BEGIN { ORS = "%0A" } 1'; }
+          echo "::error title=${{ matrix.name }}: errors::$( grep -nE 'error( |:)|Error:|ERR!|fatal:|FAILED|Cannot find' build.log | tail -n 30 | clean )"
+          echo "::error title=${{ matrix.name }}: last lines::$( tail -n 40 build.log | clean )"
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: kaivon-code-${{ matrix.os }}-${{ matrix.arch }}
+          path: assets/
+          retention-days: 14
+          if-no-files-found: error
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          path: assets
+          merge-multiple: true
+
+      - name: Fixed names, so download links never change
+        working-directory: assets
+        run: |
+          mv KaivonCode.arm64.*.dmg KaivonCode-mac-apple-silicon.dmg
+          mv KaivonCode.x64.*.dmg KaivonCode-mac-intel.dmg
+          mv KaivonCode-darwin-arm64-*.zip KaivonCode-mac-apple-silicon.zip
+          mv KaivonCode-darwin-x64-*.zip KaivonCode-mac-intel.zip
+          mv KaivonCodeUserSetup-x64-*.exe KaivonCode-windows-setup.exe
+          mv KaivonCode-win32-x64-*.zip KaivonCode-windows.zip
+          mv KaivonCode-linux-x64-*.tar.gz KaivonCode-linux.tar.gz
+          sha256sum * > SHA256SUMS.txt
+          ls -la
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          case "${GITHUB_REF_NAME}" in *beta*) PRE=--prerelease ;; *) PRE=--latest ;; esac
+          gh release create "${GITHUB_REF_NAME}" assets/* --title "Kaivon Code ${GITHUB_REF_NAME}" --generate-notes ${PRE}

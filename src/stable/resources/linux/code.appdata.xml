@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop">
+	<id>@@NAME@@.desktop</id>
+	<metadata_license>@@LICENSE@@</metadata_license>
+	<project_license>@@LICENSE@@</project_license>
+	<name>@@NAME_LONG@@</name>
+	<url type="homepage">https://code.kaivon.app</url>
+	<summary>A code editor from Kaivon</summary>
+	<description>
+		<p>Kaivon Code is a code editor from Kaivon, built on the open-source core of VS Code (Code - OSS), with extensions from Open VSX.</p>
+	</description>
+	<screenshots>
+		<screenshot type="default">
+			<image>https://code.kaivon.app/og.png</image>
+			<caption>Kaivon Code</caption>
+		</screenshot>
+	</screenshots>
+</component>

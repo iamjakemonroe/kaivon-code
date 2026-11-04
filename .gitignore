@@ -1,0 +1,9 @@
+vscode*
+VS*/*
+VSCode*
+.DS_Store
+*.env
+*.bak
+*.log
+assets/
+node_modules/
