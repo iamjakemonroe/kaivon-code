@@ -1,8 +1,10 @@
 import * as vscode from 'vscode';
-import { Agent, StepError, type AgentView, type StepEvent } from './agent';
+import { basename } from 'node:path';
+import { Agent, StepError, type AgentView, type Block, type StepEvent } from './agent';
 import type { ChipApi, ServerEvent } from './api';
-import { surroundings, VsCodeHost } from './host';
+import { heavy, surroundings, VsCodeHost } from './host';
 import type { FromPanel, Model, PanelState, ToolStatus, ToPanel } from './protocol';
+import { asBlocks, readAny } from './readers';
 import type { Request } from './tools';
 
 /** The chat panel: shows the conversation, asks for approvals, and owns the sign-in steps. */
@@ -38,6 +40,8 @@ export class ChipView implements vscode.WebviewViewProvider, AgentView {
   private email: string | null = null;
   private signedIn = false;
   private queued: string | null = null;
+  private files: { id: string; name: string; detail: string; blocks: Block[] }[] = [];
+  private fileCount = 0;
 
   constructor(
     private readonly context: vscode.ExtensionContext,
@@ -171,6 +175,16 @@ export class ChipView implements vscode.WebviewViewProvider, AgentView {
       case 'model':
         this.setModel(m.model);
         break;
+      case 'attach':
+        await this.choose();
+        break;
+      case 'attach-data':
+        await this.add(m.name, Buffer.from(m.data, 'base64'));
+        break;
+      case 'detach':
+        this.files = this.files.filter((f) => f.id !== m.id);
+        this.pushFiles();
+        break;
       case 'insert':
         await vscode.window.activeTextEditor?.insertSnippet(new vscode.SnippetString(m.code.replace(/[$}\\]/g, '\\$&')));
         break;
@@ -186,6 +200,26 @@ export class ChipView implements vscode.WebviewViewProvider, AgentView {
       case 'signout':
         await vscode.commands.executeCommand('chip.signOut');
         break;
+    }
+  }
+
+  private pushFiles() {
+    this.post({ type: 'files', files: this.files.map(({ id, name, detail }) => ({ id, name, detail })) });
+  }
+
+  /** Any file from anywhere on the computer: the developer chose it, so it needs no approval. */
+  private async choose() {
+    const uris = await vscode.window.showOpenDialog({ canSelectMany: true, openLabel: 'Give to Chip', title: 'Give files to Chip' });
+    for (const uri of uris ?? []) await this.add(basename(uri.fsPath), await vscode.workspace.fs.readFile(uri));
+  }
+
+  private async add(name: string, bytes: Uint8Array) {
+    try {
+      const reading = await readAny(name, bytes, heavy);
+      this.files.push({ id: `f${++this.fileCount}`, name, detail: reading.format, blocks: asBlocks(name, reading) });
+      this.pushFiles();
+    } catch (e) {
+      this.note(`Couldn’t read ${name}: ${(e as Error).message}`, 'warn');
     }
   }
 
@@ -223,6 +257,8 @@ export class ChipView implements vscode.WebviewViewProvider, AgentView {
     this.agent.stop();
     this.agent = this.newAgent();
     this.allowEdits = false;
+    this.files = [];
+    this.pushFiles();
     this.post({ type: 'reset' });
   }
 
@@ -247,10 +283,13 @@ export class ChipView implements vscode.WebviewViewProvider, AgentView {
     const clean = text.trim();
     if (!clean || this.agent.busy) return;
     const around = surroundings();
-    this.post({ type: 'user', text: clean, files: around.files });
+    const given = this.files;
+    this.files = [];
+    this.pushFiles();
+    this.post({ type: 'user', text: clean, files: [...given.map((f) => f.name), ...around.files] });
     this.post({ type: 'busy', busy: true });
     try {
-      await this.agent.send(`${around.text}\n\n${clean}`, this.model);
+      await this.agent.send(`${around.text}\n\n${clean}`, this.model, given.flatMap((f) => f.blocks));
     } catch (e) {
       const error = e as StepError;
       this.note(error.message, 'warn');

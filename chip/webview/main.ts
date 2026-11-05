@@ -72,10 +72,53 @@ box.placeholder = 'Ask Chip to change something…';
 box.setAttribute('aria-label', 'Message to Chip');
 const row = el('div', 'row');
 const left = el('span', 'left');
+const attach = el('button', 'attach', '+');
+attach.type = 'button';
+attach.title = 'Give Chip any file: Excel, Word, PDF, images and more';
+attach.setAttribute('aria-label', 'Give Chip a file');
+attach.onclick = () => send({ type: 'attach' });
+const given = el('div', 'given');
 const go = el('button', 'go');
 go.type = 'submit';
-row.append(left, go);
-composer.append(context, box, row);
+row.append(attach, left, go);
+composer.append(given, context, box, row);
+
+const MOST_DROP = 50 * 1024 * 1024;
+
+/** Files dropped on the panel or pasted into it. */
+async function takeFiles(files: FileList | File[]) {
+  for (const file of files) {
+    if (file.size > MOST_DROP) {
+      on({ type: 'note', text: `${file.name} is over 50 MB. Choose it with + instead, or give Chip a smaller file.`, tone: 'warn' });
+      continue;
+    }
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let binary = '';
+    for (let i = 0; i < bytes.length; i += 32768) binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
+    send({ type: 'attach-data', name: file.name || 'pasted-image.png', data: btoa(binary) });
+  }
+}
+
+for (const type of ['dragenter', 'dragover'] as const) {
+  document.addEventListener(type, (e) => {
+    e.preventDefault();
+    if (state.signedIn) composer.classList.add('dropping');
+  });
+}
+document.addEventListener('dragleave', (e) => {
+  if (!e.relatedTarget) composer.classList.remove('dropping');
+});
+document.addEventListener('drop', (e) => {
+  e.preventDefault();
+  composer.classList.remove('dropping');
+  if (state.signedIn && e.dataTransfer?.files.length) void takeFiles(e.dataTransfer.files);
+});
+box.addEventListener('paste', (e) => {
+  if (e.clipboardData?.files.length) {
+    e.preventDefault();
+    void takeFiles(e.clipboardData.files);
+  }
+});
 
 function renderGo() {
   go.textContent = busy ? 'Stop' : 'Send';
@@ -394,6 +437,20 @@ function on(m: ToPanel) {
     case 'context':
       context.replaceChildren();
       if (m.file) context.append(el('span', 'chipfile', m.lines ? `${m.file} · lines ${m.lines}` : m.file));
+      break;
+    case 'files':
+      given.replaceChildren(
+        ...m.files.map((f) => {
+          const chip = el('span', 'file');
+          chip.title = f.detail;
+          const remove = el('button', '', '×');
+          remove.type = 'button';
+          remove.setAttribute('aria-label', `Remove ${f.name}`);
+          remove.onclick = () => send({ type: 'detach', id: f.id });
+          chip.append(el('span', 'fname', f.name), remove);
+          return chip;
+        }),
+      );
       break;
     case 'prefill':
       box.value = m.text;

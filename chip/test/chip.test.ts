@@ -14,6 +14,11 @@ function fakeHost(files: Record<string, string> = {}, approve = true): Host & { 
       if (!(p in files)) throw new Error(`${p} doesn't exist`);
       return files[p];
     },
+    readBytes: async (p) => {
+      if (!(p in files)) throw new Error(`${p} doesn't exist`);
+      return new TextEncoder().encode(files[p]);
+    },
+    heavy: { sheet: () => '', pdf: async () => ({ text: '', pages: 0 }) },
     exists: async (p) => p in files,
     list: async () => [{ name: 'src', dir: true }, { name: 'a.ts', dir: false }],
     find: async () => ['a.ts'],

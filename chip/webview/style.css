@@ -122,8 +122,17 @@ body.busy .turn:last-child .think:last-of-type summary { background: var(--kaivo
 .chipfile { max-width: 100%; padding: 0 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; border-radius: 5px; color: var(--muted); background: var(--soft); border: 1px solid var(--line); }
 .composer textarea { display: block; width: 100%; padding: 7px 10px 2px; resize: none; border: 0; outline: none; background: transparent; color: var(--vscode-input-foreground); }
 .composer textarea::placeholder { color: var(--vscode-input-placeholderForeground); }
-.row { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 6px 6px 10px; }
-.left { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--muted); }
+.row { display: flex; align-items: center; gap: 6px; padding: 4px 6px 6px 10px; }
+.attach { flex: none; width: 22px; height: 22px; margin-left: -4px; border-radius: 6px; font-size: 15px; line-height: 1; color: var(--muted); }
+.attach:hover { color: var(--ink); background: var(--soft); }
+.given { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 8px 0; }
+.given:empty { display: none; }
+.file { display: inline-flex; align-items: center; gap: 2px; max-width: 100%; padding: 1px 2px 1px 7px; font-size: 11.5px; border-radius: 6px; border: 1px solid var(--iris); background: rgb(139 124 255 / 0.12); }
+.fname { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.file button { flex: none; padding: 0 4px; color: var(--muted); }
+.file button:hover { color: var(--ink); }
+.composer.dropping { border-color: var(--iris); box-shadow: 0 0 0 2px rgb(139 124 255 / 0.45), 0 0 24px rgb(139 124 255 / 0.25); }
+.left { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; color: var(--muted); }
 .go { flex: none; padding: 3px 12px; border-radius: 7px; font-size: 12px; font-weight: 600; color: #fff; background: linear-gradient(135deg, #7c70ff, #5a4ee8); }
 .go:hover:not(:disabled) { filter: brightness(1.12); }
 .go.stop { background: var(--del); }

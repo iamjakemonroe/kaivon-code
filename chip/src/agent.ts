@@ -66,11 +66,11 @@ export class Agent {
     this.stopper?.abort();
   }
 
-  /** Sends [text] to Chip and works until it's finished, stopped or fails. */
-  async send(text: string, model: Model): Promise<void> {
+  /** Sends [text], with any files, to Chip and works until it's finished, stopped or fails. */
+  async send(text: string, model: Model, files: Block[] = []): Promise<void> {
     if (this.stopper) return;
     const stopper = (this.stopper = new AbortController());
-    this.messages.push({ role: 'user', content: text });
+    this.messages.push({ role: 'user', content: files.length ? [...files, { type: 'text', text }] : text });
     try {
       await this.work(model, stopper.signal);
     } catch (e) {
@@ -126,7 +126,7 @@ export class Agent {
 
   private async run(call: Block, cut: boolean, signal: AbortSignal): Promise<Block> {
     const id = String(call.id);
-    const answer = (content: string, failed: boolean): Block => ({ type: 'tool_result', tool_use_id: id, content, ...(failed ? { is_error: true } : {}) });
+    const answer = (content: string | Block[], failed: boolean): Block => ({ type: 'tool_result', tool_use_id: id, content, ...(failed ? { is_error: true } : {}) });
     if (cut) {
       this.view.tool(id, 'Cut off before it finished', 'failed');
       return answer('Your answer hit the output limit and this call was cut off, so it did not run. Make smaller changes.', true);
@@ -141,6 +141,6 @@ export class Agent {
       this.view.tool(id, 'Running…', 'running', output.slice(-4000));
     });
     this.view.tool(id, result.label, result.skipped ? 'skipped' : result.failed ? 'failed' : 'done', result.detail);
-    return answer(result.text, !!result.failed || !!result.skipped);
+    return answer((result.blocks as Block[] | undefined) ?? result.text, !!result.failed || !!result.skipped);
   }
 }

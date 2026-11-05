@@ -1,4 +1,5 @@
 import type { ApprovalKind } from './protocol';
+import { asBlocks, readAny, type Heavy, type Reading } from './readers';
 
 /** Chip's tools, as they run on the developer's machine. Everything that touches the editor or disk
  * goes through Host, so this logic can be tested on its own. Input is checked here because the API
@@ -16,6 +17,9 @@ export interface Request {
 
 export interface Host {
   read(path: string): Promise<string>;
+  readBytes(path: string): Promise<Uint8Array>;
+  /** The readers for spreadsheets and PDFs. */
+  heavy: Heavy;
   exists(path: string): Promise<boolean>;
   list(path: string): Promise<{ name: string; dir: boolean }[]>;
   find(glob: string): Promise<string[]>;
@@ -29,6 +33,8 @@ export interface Host {
 export interface Outcome {
   /** What goes back to Chip. */
   text: string;
+  /** Instead of text: what Chip should see, such as an image. */
+  blocks?: Record<string, unknown>[];
   failed?: boolean;
   /** The developer said no. */
   skipped?: boolean;
@@ -114,13 +120,24 @@ async function readFile(input: Input, host: Host): Promise<Outcome> {
   if (looksSecret(path) && !(await host.approve({ kind: 'secret', title: `Let Chip read ${path}?`, body: 'This file may hold secrets. What Chip reads is sent to its servers.' }))) {
     return { text: `The developer chose not to share ${path}.`, skipped: true, label: `Kept ${path} private` };
   }
-  const lines = (await host.read(path)).split(/\r?\n/);
+  const reading = await host.readBytes(path).then((bytes) => readAny(path, bytes, host.heavy));
+  if (reading.kind === 'image' || reading.kind === 'scan') return { text: `${path} (${reading.format})`, blocks: asBlocks(path, reading), label: `Looked at ${path}` };
+  // An open file may have unsaved changes: that's the file as the developer sees it.
+  const lines = (reading.kind === 'plain' ? await host.read(path) : reading.text).split(/\r?\n/);
   const from = Math.max((first ?? 1) - 1, 0);
   const to = Math.min(last ?? from + MOST_LINES, lines.length, from + MOST_LINES);
   let body = lines.slice(from, to).map((line, i) => `${from + i + 1}\t${line}`).join('\n');
   if (body.length > MOST_CHARS) body = `${body.slice(0, MOST_CHARS)}\n[…cut here: read a smaller range…]`;
   const rest = to < lines.length ? `\n[…${lines.length - to} more lines: read on with start_line ${to + 1}…]` : '';
-  return { text: `${body}${rest}`, label: `Read ${path}${first ? ` (lines ${from + 1}–${to})` : ''}` };
+  const note = reading.kind === 'extracted' ? `[Text taken from ${path} (${reading.format}). Line numbers are for this reading, not the file.]\n` : '';
+  return { text: `${note}${body}${rest}`, label: `Read ${path}${first ? ` (lines ${from + 1}–${to})` : ''}`, detail: reading.kind === 'extracted' ? reading.format : undefined };
+}
+
+/** Chip's edits replace text, which would destroy a binary file. */
+async function refuseBinary(path: string, host: Host): Promise<Outcome | null> {
+  const reading: Reading = await host.readBytes(path).then((bytes) => readAny(path, bytes, host.heavy));
+  if (reading.kind === 'plain') return null;
+  return { text: `${path} is ${reading.format}, not a text file, so it can't be changed with this tool. Tell the developer what to change, or write a new file.`, failed: true, label: `Can't edit ${path}` };
 }
 
 async function change(path: string, before: string, after: string, exists: boolean, host: Host): Promise<Outcome> {
@@ -141,6 +158,8 @@ async function change(path: string, before: string, after: string, exists: boole
 
 async function editFile(input: Input, host: Host): Promise<Outcome> {
   const path = safePath(text(input, 'path'));
+  const refused = await refuseBinary(path, host);
+  if (refused) return refused;
   const before = await host.read(path);
   const result = applyEdit(before, text(input, 'old_text'), text(input, 'new_text'), optional<boolean>(input, 'replace_all', 'boolean') ?? false);
   if ('error' in result) return { text: result.error, failed: true, label: `Couldn't edit ${path}` };
@@ -151,6 +170,8 @@ async function writeFile(input: Input, host: Host): Promise<Outcome> {
   const path = safePath(text(input, 'path'));
   if (!path) throw new BadInput('path is empty');
   const exists = await host.exists(path);
+  const refused = exists ? await refuseBinary(path, host) : null;
+  if (refused) return refused;
   return change(path, exists ? await host.read(path) : '', text(input, 'content'), exists, host);
 }
 

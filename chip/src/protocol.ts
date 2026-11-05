@@ -39,7 +39,8 @@ export type ToPanel =
   | { type: 'note'; text: string; tone?: 'warn' }
   | { type: 'context'; file: string | null; lines: string | null }
   | { type: 'signin'; step: 'email' | 'code'; email?: string; error?: string; busy?: boolean }
-  | { type: 'prefill'; text: string };
+  | { type: 'prefill'; text: string }
+  | { type: 'files'; files: { id: string; name: string; detail: string }[] };
 
 export type FromPanel =
   | { type: 'ready' }
@@ -54,4 +55,9 @@ export type FromPanel =
   | { type: 'restart-signin' }
   | { type: 'signout' }
   | { type: 'model'; model: Model }
-  | { type: 'insert'; code: string };
+  | { type: 'insert'; code: string }
+  /** Choose files to give Chip, from anywhere on the computer. */
+  | { type: 'attach' }
+  /** A file dropped on the panel or pasted into it. */
+  | { type: 'attach-data'; name: string; data: string }
+  | { type: 'detach'; id: string };

@@ -1,7 +1,9 @@
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import * as vscode from 'vscode';
+import type { Heavy } from './readers';
 import type { Host, Request } from './tools';
 
 /** The tools' hands: VS Code's workspace, its open files and a shell. */
@@ -10,7 +12,16 @@ const SKIP = '**/{node_modules,.git,dist,build,out,.next,.dart_tool,target,vendo
 
 const severity = ['Error', 'Warning', 'Info', 'Hint'];
 
+/** Spreadsheets and PDFs have big readers of their own, built beside this file and loaded on first
+ * use, so Chip starts fast. */
+export const heavy: Heavy = {
+  sheet: (bytes, name) => (require(join(__dirname, 'reader-sheet.js')) as { sheetText: Heavy['sheet'] }).sheetText(bytes, name),
+  pdf: async (bytes) => ((await import(pathToFileURL(join(__dirname, 'reader-pdf.mjs')).href)) as { pdfText: Heavy['pdf'] }).pdfText(bytes),
+};
+
 export class VsCodeHost implements Host {
+  readonly heavy = heavy;
+
   constructor(readonly approve: (request: Request) => Promise<boolean>) {}
 
   private get root(): vscode.Uri {
@@ -34,6 +45,14 @@ export class VsCodeHost implements Host {
     if (open) return open.getText();
     try {
       return new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
+    } catch {
+      throw new Error(`${path} doesn't exist.`);
+    }
+  }
+
+  async readBytes(path: string) {
+    try {
+      return await vscode.workspace.fs.readFile(this.uri(path));
     } catch {
       throw new Error(`${path} doesn't exist.`);
     }

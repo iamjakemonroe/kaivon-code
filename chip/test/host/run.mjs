@@ -1,4 +1,4 @@
-import { mkdtempSync } from 'node:fs';
+import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,9 +9,15 @@ import { runTests } from '@vscode/test-electron';
 delete process.env.ELECTRON_RUN_AS_NODE;
 
 const chip = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-await build({ entryPoints: [join(chip, 'test/host/suite.ts')], bundle: true, platform: 'node', format: 'cjs', target: 'node20', external: ['vscode'], outfile: join(chip, 'dist-test/suite.cjs'), logLevel: 'warning' });
-await runTests({
-  extensionDevelopmentPath: chip,
-  extensionTestsPath: join(chip, 'dist-test/suite.cjs'),
-  launchArgs: [mkdtempSync(join(tmpdir(), 'chip-host-')), '--disable-extensions', '--disable-workspace-trust'],
-});
+// Beside the readers, which load from the bundle's own folder. Never shipped: it's removed below.
+const suite = join(chip, 'dist/test-suite.cjs');
+await build({ entryPoints: [join(chip, 'test/host/suite.ts')], bundle: true, platform: 'node', format: 'cjs', target: 'node20', external: ['vscode'], outfile: suite, logLevel: 'warning' });
+try {
+  await runTests({
+    extensionDevelopmentPath: chip,
+    extensionTestsPath: suite,
+    launchArgs: [mkdtempSync(join(tmpdir(), 'chip-host-')), '--disable-extensions', '--disable-workspace-trust'],
+  });
+} finally {
+  rmSync(suite, { force: true });
+}

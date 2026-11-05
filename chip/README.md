@@ -7,6 +7,7 @@ Chip reads your project, makes changes you approve, and runs your tests. It's bu
 - **Ask** about your code, or give Chip a job: fix this bug, add this feature, write these tests. `Cmd/Ctrl + L` opens Chip.
 - **You stay in charge.** Chip shows every edit before it's saved and asks before every command. It can't reach outside your project, and it asks before reading files that may hold secrets, such as `.env`.
 - **Edit in place.** Select code and press `Cmd/Ctrl + I`, then say what should change.
+- **Give Chip any file.** Press **+**, drop a file on the panel, or paste a picture. Chip reads Excel (formulas and macros too), Word, PowerPoint, PDFs, scans, images and archives, and tells you what any other file is. It reads these files but doesn't change them.
 - **Fix errors.** Choose **Fix with Chip** on any error, or **Ask Chip About This Output** in the terminal.
 
 Sign in with your Kaivon account (the same one as Utopia and Chip Study). Chip sends what it reads to Kaivon's servers and on to Anthropic's Claude to answer you.

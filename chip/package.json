@@ -2,7 +2,7 @@
   "name": "chip",
   "displayName": "Chip",
   "description": "Your coding partner from Kaivon. Chip reads your project, makes changes you approve, and runs your tests.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "kaivon",
   "license": "MIT",
   "repository": {
@@ -153,9 +153,12 @@
     "@vscode/test-electron": "^3.1.0",
     "dompurify": "^3.4.17",
     "esbuild": "^0.25.0",
+    "fflate": "^0.8.3",
     "highlight.js": "^11.12.0",
     "marked": "^18.1.2",
+    "pdfjs-dist": "^6.5.438",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz"
   }
 }
