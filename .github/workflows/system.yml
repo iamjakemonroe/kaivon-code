@@ -137,6 +137,16 @@ jobs:
 
       - name: Add to the release
         run: |
-          case "${GITHUB_REF_NAME}" in *beta*) KIND=--prerelease ;; *) KIND=--latest ;; esac
+          case "${GITHUB_REF_NAME}" in *beta*) KIND=--prerelease ;; *) KIND=--latest=false ;; esac
           gh release view "${GITHUB_REF_NAME}" > /dev/null 2>&1 || gh release create "${GITHUB_REF_NAME}" --title "Kaivon Code ${GITHUB_REF_NAME}" --generate-notes "${KIND}" || true
           gh release upload "${GITHUB_REF_NAME}" assets/* --clobber
+
+      # Latest only once every system is in, so the download links never lead nowhere.
+      - name: Make it the latest
+        if: ${{ !contains(github.ref_name, 'beta') }}
+        run: |
+          names="$( gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name' )"
+          for file in KaivonCode-mac-apple-silicon.dmg KaivonCode-mac-intel.dmg KaivonCode-windows-setup.exe KaivonCode-linux.tar.gz; do
+            grep -qx "${file}" <<< "${names}" || exit 0
+          done
+          gh release edit "${GITHUB_REF_NAME}" --latest

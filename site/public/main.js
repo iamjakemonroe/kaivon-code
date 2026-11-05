@@ -24,15 +24,21 @@ if (mine) {
   document.getElementById('primary-note').textContent = 'For Mac, Windows and Linux. Open this page on your computer to download.';
 }
 
-// The release says what's really there: a system that hasn't been built isn't offered.
-fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+// Each system links to the newest release that really has its file: a new release fills up one
+// system at a time, and a system that's never been built isn't offered.
+fetch(`https://api.github.com/repos/${REPO}/releases?per_page=8`)
   .then((r) => (r.ok ? r.json() : null))
-  .then((release) => {
-    if (!release) return;
-    document.getElementById('version').textContent = `Free, for Mac, Windows and Linux. Latest: ${release.tag_name}.`;
-    const files = new Set(release.assets.map((a) => a.name));
+  .then((releases) => {
+    const ready = (releases ?? []).filter((r) => !r.prerelease && !r.draft);
+    if (!ready.length) return;
+    document.getElementById('version').textContent = `Free, for Mac, Windows and Linux. Latest: ${ready[0].tag_name}.`;
     for (const a of links) {
-      if (files.has(a.dataset.file)) continue;
+      const asset = ready.flatMap((r) => r.assets).find((f) => f.name === a.dataset.file);
+      if (asset) {
+        a.href = asset.browser_download_url;
+        if (a === mine) primary.href = a.href;
+        continue;
+      }
       a.setAttribute('aria-disabled', 'true');
       a.removeAttribute('href');
       a.querySelector('span').textContent += ' · coming soon';
